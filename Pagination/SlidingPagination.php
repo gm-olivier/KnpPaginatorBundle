@@ -125,7 +125,15 @@ class SlidingPagination extends AbstractPagination
         $sorted = $this->isSorted($key, $params);
 
         if ($sorted) {
-            $direction = $params[$this->getPaginatorOption('sortDirectionParameterName')];
+            if( ! isset( $params[$this->getPaginatorOption('sortDirectionParameterName')] ) )
+            {
+                $direction = $this->getPaginatorOption('grouping_config')->getDefaultDirection();
+            }
+            else
+            {
+                $direction = $params[$this->getPaginatorOption('sortDirectionParameterName')];
+            }
+        
             $direction = (strtolower($direction) == 'asc') ? 'desc' : 'asc';
             $class = $direction == 'asc' ? 'desc' : 'asc';
             if (isset($options['class'])) {
@@ -173,7 +181,13 @@ class SlidingPagination extends AbstractPagination
     {
         $params = array_merge($this->params, $params);
 
-        return isset($params[$this->getPaginatorOption('sortFieldParameterName')]) && $params[$this->getPaginatorOption('sortFieldParameterName')] === $key;
+		$normal_sorted = isset($params[$this->getPaginatorOption('sortFieldParameterName')]) && $params[$this->getPaginatorOption('sortFieldParameterName')] === $key;
+		
+		$default_sorted = false;
+		if( $this->getPaginatorOption('grouping_config') )
+			$default_sorted = ( $this->getPaginatorOption('grouping_config')->getDefaultSort() === $key );
+
+        return $normal_sorted || $default_sorted;
     }
 
     public function getPaginationData()
